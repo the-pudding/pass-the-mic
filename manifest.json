@@ -18,6 +18,7 @@
   },
   "content_scripts": [{
     "matches": ["https://meet.google.com/*"],
-    "js": ["scripts/content.js"]
+    "js": ["scripts/d3.v7.min.js", "scripts/content.js"],
+		"css": ["styles/content.css"]
   }]
 }
