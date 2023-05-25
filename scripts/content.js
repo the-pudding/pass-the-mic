@@ -1,12 +1,4 @@
 const visEl = document.createElement("div");
-const pEl = document.createElement("p");
-pEl.style.height = "640px";
-pEl.style.overflow = "scroll";
-pEl.style.padding = "8px";
-pEl.style.zIndex = "99999";
-pEl.style.position = "fixed";
-pEl.style.top = "0";
-pEl.style.left = "0";
 
 const speakers = new Map();
 const barHeight = 36;
@@ -18,9 +10,10 @@ function updateVis() {
 
   const all = [];
 
-  for (let [key, value] of speakers) {
+  for (let [key, captions] of speakers) {
+    console.log(Object.values(captions));
     const name = key.split("|")[0];
-    const count = d3.sum(value.map((d) => d.length));
+    const count = d3.sum(Object.values(captions).map((d) => d.length));
     all.push({ key, name, count });
   }
 
@@ -81,17 +74,11 @@ function waitForElement(selector, callback, timeout = 1000) {
   }, timeout);
 }
 
-function handleSpeak(id, speechEl) {
-  if (!speakers.has(id)) speakers.set(id, []);
-  speakers.set(id, [...speakers.get(id), speechEl.textContent]);
-  // pEl.textContent = JSON.stringify([...speakers.get(id), speechEl.textContent]);
+function handleSpanText(id, node) {
+  const index = node.getAttribute("data-index");
+  const text = node.textContent;
+  speakers.get(id)[index] = text;
   updateVis();
-}
-
-let n = 0;
-
-function handleSpanText(node) {
-  console.log(node.getAttribute("data-index"), node.textContent);
 }
 
 function observeSpan(id, node) {
@@ -101,9 +88,9 @@ function observeSpan(id, node) {
     subtree: true,
   };
 
-  // listen to first span
-  node.setAttribute("data-index", n++);
-  const observer = new MutationObserver(() => handleSpanText(node));
+  const newIndex = speakers.get(id).length || 0;
+  node.setAttribute("data-index", newIndex);
+  const observer = new MutationObserver(() => handleSpanText(id, node));
   observer.observe(node, config);
 }
 
@@ -126,6 +113,8 @@ function observeSpeaker(el) {
   const suffix = imgEl.src.split("/").pop().replace(/\W/g, "");
   const id = `${name}|${suffix}`;
 
+  if (!speakers.has(id)) speakers.set(id, {});
+
   const node = speechEl.childNodes[0];
   observeSpan(id, node);
 
@@ -144,7 +133,7 @@ function observeSpeaker(el) {
 function handlePersonChange(mutationsList) {
   for (let mutation of mutationsList) {
     if (mutation.addedNodes.length) {
-      console.log("person change");
+      // console.log("person change");
       observeSpeaker(mutation.addedNodes[0]);
     }
 
@@ -158,7 +147,6 @@ function handlePersonChange(mutationsList) {
 function init(captionsButton) {
   visEl.classList.add("ptm-vis");
   document.body.appendChild(visEl);
-  document.body.appendChild(pEl);
 
   captionsButton.click();
 
