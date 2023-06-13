@@ -12,9 +12,11 @@ function updateVis() {
 
   for (let [key, captions] of speakers) {
     console.log(Object.values(captions));
-    const name = key.split("|")[0];
+    const splits = key.split("|");
+    const name = splits[0];
+    const index = splits[2];
     const count = d3.sum(Object.values(captions).map((d) => d.length));
-    all.push({ key, name, count });
+    all.push({ key, name, index, count });
   }
 
   const total = d3.sum(all.map((d) => d.count));
@@ -23,10 +25,12 @@ function updateVis() {
   // sort by count
   percents.sort((a, b) => b.percent - a.percent);
 
+  const ranked = percents.map((d, i) => ({ ...d, rank: i }));
+
   const speakerEnter = (enter) => {
     const speaker = enter.append("div");
 
-    speaker.attr("class", "speaker");
+    speaker.attr("class", (d) => `speaker speaker-${d.index}`);
     speaker.style("height", `${barHeight}px`);
 
     speaker
@@ -45,14 +49,14 @@ function updateVis() {
   const joined = d3
     .select(visEl)
     .selectAll(".speaker")
-    .data(percents, (d) => d.key)
+    .data(ranked, (d) => d.key)
     .join(speakerEnter);
 
   joined
     .transition()
     .duration(500)
     .ease(d3.easeCubicInOut)
-    .style("top", (d, i) => `${margin * 2 + (barHeight + margin) * i}px`);
+    .style("top", (d) => `${margin * 2 + (barHeight + margin) * d.rank}px`);
 
   joined
     .select(".inner")
@@ -111,7 +115,7 @@ function observeSpeaker(el) {
   const name = nameEl.textContent;
   // replace non alphanumeric characters with nothing
   const suffix = imgEl.src.split("/").pop().replace(/\W/g, "");
-  const id = `${name}|${suffix}`;
+  const id = `${name}|${suffix}|${speakers.size}`;
 
   if (!speakers.has(id)) speakers.set(id, {});
 
