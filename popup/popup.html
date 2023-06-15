@@ -1,7 +1,32 @@
 <!DOCTYPE html>
 <html>
+	<head>
+		<link rel="stylesheet" href="popup.css">
+	</head>
 <body>
-    <h1>Pass The Mic</h1>
-    <p>Visualizing how much each person is talking in Google Meet.</p>
+		<section id="intro">
+			<h1>Pass The Mic</h1>
+			<p class="description">Visualizing how much each person is talking in Google Meet</p>
+		</section>
+		
+		<section id="settings">
+			<fieldset>
+				<legend>Settings</legend>
+				<div>
+					<input type="checkbox" id="enable" checked>
+					<label for="enable">Enable</label>
+				</div>
+				<div>
+					<input type="checkbox" id="captions">
+					<label for="captions">Show captions</label>
+				</div>
+			</fieldset>
+		</section>
+
+		<section id="credits">
+			<p>By <a href="https://pudding.cool/author/russell-samora" target="_blank" rel="noreferrer">Russell Samora</a> for The
+				Pudding.</p>
+		</section>
 </body>
+<script src="popup.js"></script>
 </html>
