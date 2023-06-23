@@ -182,6 +182,7 @@
 .ptm-popup label {
 	display: inline-block;
 	margin: 0;
+	font-weight: 600;
 }
 
 .ptm-popup fieldset {
@@ -190,6 +191,14 @@
 
 .ptm-popup fieldset div {
 	margin: 8px 0;
+}
+
+.ptm-popup fieldset div p {
+	margin: 8px 0;
+	font-size: 12px !important;
+}
+
+.ptm-popup fieldset .flex {
 	display: flex;
 }
 

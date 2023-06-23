@@ -114,11 +114,13 @@ const shareSvg =
 let speakers = new Map();
 let jargonTracker = {};
 let settings;
-let threshold = 0;
 let nameYou = "You";
 let captionsButtonEl;
 let captionsContainerEl;
 let showJargon;
+let threshold = 0;
+let thresholdPercent = 1;
+let numSpeakers = 1;
 
 function setStorage(key, value) {
   window.localStorage.setItem(`${base}-${key}`, value);
@@ -178,11 +180,15 @@ function prepareData() {
   return clean;
 }
 
+function updateThreshold() {
+  threshold = (1 / numSpeakers) * thresholdPercent;
+}
+
 function updateNumSpeakers() {
   const total = document.querySelectorAll("[data-self-name]").length;
   const ignoreCount = d3.selectAll(".speaker.ignore").size();
-  const numSpeakers = total - ignoreCount;
-  threshold = (1 / numSpeakers) * 1.5;
+  numSpeakers = total - ignoreCount;
+  updateThreshold();
 }
 
 function toggleIgnore() {
@@ -443,6 +449,10 @@ function updateOptions() {
 
   // jargon
   showJargon = opts.jargon === "true";
+
+  // threshold
+  thresholdPercent = +opts.threshold / 100 + 1;
+  updateThreshold();
 }
 
 function observeCaptions() {
@@ -549,18 +559,24 @@ function createPopup() {
 		<section id="settings">
 			<fieldset>
 				<legend>Settings</legend>
-				<div>
+				<div class="flex">
 					<input type="checkbox" id="enable" checked>
 					<label for="enable">Enable</label>
 				</div>
-				<div>
+				<div class="flex">
 					<input type="checkbox" id="captions">
 					<label for="captions">Show captions</label>
 				</div>
-				<div>
+				<div class="flex">
 					<input type="checkbox" id="jargon">
-					<label for="jargon">Highlight Jargon</label>
+					<label for="jargon">Show jargon</label>
 				</div>
+				<div>
+					<label for="threshold">Highlight threshold:</label>
+					<p>The percent over an equal speaking share to trigger highlight</p>
+					<input type="range" id="threshold" value="50">
+				</div>
+
 			</fieldset>
 		</section>
 
@@ -590,10 +606,28 @@ function createPopup() {
   );
 
   settings.forEach((key) => {
-    const value = getStorage(key) === "true";
-    document.getElementById(key).checked = value || false;
+    const value = getStorage(key);
+
+    // set based on local storage values or defaults
+    if (key === "threshold") {
+      const v = value || "50";
+      document.getElementById(key).value = v;
+      setStorage(key, v);
+    } else {
+      const defaultValue = key === "enable";
+      let checked;
+      if (value === "true") checked = true;
+      else if (value === "false") checked = false;
+      else {
+        checked = defaultValue;
+        setStorage(key, defaultValue);
+      }
+
+      document.getElementById(key).checked = checked;
+    }
     document.getElementById(key).addEventListener("change", (e) => {
-      setStorage(key, e.target.checked);
+      const value = key === "threshold" ? e.target.value : e.target.checked;
+      setStorage(key, value);
       updateOptions();
     });
   });
