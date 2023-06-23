@@ -1,8 +1,107 @@
 const primary = "#FF77AA";
 const visPadding = 16;
 const minWidth = 160;
+const jargon = [
+  "action plan",
+  "actionable",
+  "agile",
+  "alignment",
+  "all hands on deck",
+  "analysis paralysis",
+  "around the horn",
+  "asap",
+  "back to the drawing board",
+  "balls in the air",
+  "bandwidth",
+  "bang for your buck",
+  "bells and whistles",
+  "best in class",
+  "big bang for the buck",
+  "bleeding edge",
+  "blue ocean",
+  "blue sky thinking",
+  "boil the ocean",
+  "brain dump",
+  "buy in",
+  "change agent",
+  "circle back",
+  "close of play",
+  "core competency",
+  "corporate culture",
+  "corporate values",
+  "customer centric",
+  "deep dive",
+  "deliverable",
+  "disconnect",
+  "do more with less",
+  "double click",
+  "drill down",
+  "drink the kool aid",
+  "ducks in a row",
+  "ecosystem",
+  "800 pound gorilla",
+  "elephant in the room",
+  "engagement",
+  "frictionless",
+  "game changer",
+  "going forward",
+  "growth hacking",
+  "guru",
+  "ideate",
+  "ideation",
+  "in the weeds",
+  "key takeaway",
+  "laser focused",
+  "learnings",
+  "lipstick on a pig",
+  "lots of moving parts",
+  "low hanging fruit",
+  "make hay while the sun shines",
+  "make it pop",
+  "mission critical",
+  "move the goal posts",
+  "move the needle",
+  "new normal",
+  "ninja",
+  "on my radar",
+  "on the runway",
+  "open the kimono",
+  "organic growth",
+  "out of pocket",
+  "pain point",
+  "par for the course",
+  "paradigm shift",
+  "peel the onion",
+  "ping",
+  "pivot",
+  "price point",
+  "proactive",
+  "productize",
+  "push the envelope",
+  "roadmap",
+  "run it up the flagpole",
+  "run the numbers",
+  "scalability",
+  "scalable",
+  "secret sauce",
+  "skin in the game",
+  "synergy",
+  "take it offline",
+  "take offline",
+  "take this offline",
+  "test the water",
+  "30000 foot view",
+  "thought leader",
+  "thought leadership",
+  "tiger team",
+  "touch base",
+  "trim the fat",
+  "value add",
+  "vertical",
+  "win win",
+  "window of opportunity",
+];
 
-let speakers = new Map();
 const speakerNodes = new Map();
 const debug = true;
 const base = "pass-the-mic";
@@ -12,11 +111,14 @@ const refreshSvg =
 const shareSvg =
   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
 
+let speakers = new Map();
+let jargonTracker = {};
 let settings;
 let threshold = 0;
 let nameYou = "You";
 let captionsButtonEl;
 let captionsContainerEl;
+let showJargon;
 
 function setStorage(key, value) {
   window.localStorage.setItem(`${base}-${key}`, value);
@@ -32,7 +134,9 @@ function prepareData() {
   for (let [key, captions] of speakers) {
     const splits = key.split("|");
     const name = splits[0];
-    const count = d3.sum(Object.values(captions).map((d) => d.length));
+    const count = d3.sum(
+      Object.values(captions).map((d) => d.replace(/ /g, "").length)
+    );
     all.push({ key, name, count });
   }
 
@@ -81,7 +185,7 @@ function updateNumSpeakers() {
   threshold = (1 / numSpeakers) * 1.5;
 }
 
-function toggleignore() {
+function toggleIgnore() {
   const value = d3.select(this).classed("ignore");
   d3.select(this).classed("ignore", !value);
   updateNumSpeakers();
@@ -93,7 +197,7 @@ function highlight(d) {
   return d.percent >= threshold;
 }
 
-function updateVis() {
+function renderVis() {
   const data = prepareData();
 
   const speakerEnter = (enter) => {
@@ -115,7 +219,7 @@ function updateVis() {
     const percent = label.append("span").attr("class", "percent").text("0%");
     percent.text((d) => d3.format(".0%")(d.percent));
 
-    speaker.on("click", toggleignore);
+    speaker.on("click", toggleIgnore);
     return speaker;
   };
 
@@ -132,6 +236,41 @@ function updateVis() {
   joined.select(".percent").text((d) => d3.format(".0%")(d.percent));
 }
 
+function renderJargon(id, index, terms) {
+  terms.forEach((term) => {
+    const key = `${id}${index}${term}`;
+    const value = jargonTracker[key];
+    if (!value) {
+      jargonTracker[key] = true;
+      const rot1 = Math.floor(
+        Math.random() * 15 * (Math.random() < 0.5 ? 1 : -1)
+      );
+      const rot2 = Math.floor(
+        Math.random() * 15 * (Math.random() < 0.5 ? 1 : -1)
+      );
+      const scale = 1 + Math.random() * 3;
+      const left = 20 + Math.random() * 60;
+      const top = 10 + Math.random() * 20;
+      const fs = 14;
+      d3.select("body")
+        .append("p")
+        .attr("class", "ptm-jargon text-outline")
+        .text(term)
+        .style("left", `${left}%`)
+        .style("top", "100%")
+        .style("font-size", `${fs}px`)
+        .style("transform", `rotate(${rot1}deg)`)
+        .transition()
+        .ease(d3.easeLinear)
+        .duration(3000)
+        .style("top", `${top}%`)
+        .style("opacity", 0)
+        .style("transform", `scale(${scale}) rotate(${rot2}deg)`)
+        .remove();
+    }
+  });
+}
+
 function waitForElement(selector, callback, timeout = 1000) {
   const intervalId = setInterval(() => {
     const element = document.querySelector(selector);
@@ -142,14 +281,30 @@ function waitForElement(selector, callback, timeout = 1000) {
   }, timeout);
 }
 
+function cleanText(text) {
+  // replace all non-alphanumeric characters with a space
+  const a = text.toLowerCase().replace(/[^a-zA-Z0-9]/g, " ");
+  return ` ${a} `;
+}
+
+function checkForJargon(text) {
+  return jargon.filter((term) => text.includes(` ${term} `));
+}
+
 function handleTextChange(id, node) {
+  let newJargon;
+
   node.parentNode.querySelectorAll("span").forEach((node) => {
     const index = +node.getAttribute("data-index");
-    const text = node.innerText;
+    const text = cleanText(node.innerText);
     speakers.get(id)[index] = text;
+    if (showJargon) {
+      newJargon = checkForJargon(text);
+      if (newJargon.length) renderJargon(id, index, newJargon);
+    }
   });
 
-  updateVis();
+  renderVis();
 }
 
 function setIndex(id, node) {
@@ -259,11 +414,7 @@ function updateOptions() {
 
   const { display } = window.getComputedStyle(captionsContainerEl);
 
-  d3.select(captionsContainerEl).style(
-    "opacity",
-    opts.captions === "true" ? 1 : 0
-  );
-
+  // enable
   if (opts.enable === "true") {
     if (display == "none" && captionsButtonEl) captionsButtonEl.click();
     if (!visEl) observeCaptions();
@@ -283,6 +434,15 @@ function updateOptions() {
     d3.select(captionsButtonEl.parentNode).attr("title", null);
     // TODO disconnect observer
   }
+
+  // captions
+  d3.select(captionsContainerEl).style(
+    "opacity",
+    opts.captions === "true" ? 1 : 0
+  );
+
+  // jargon
+  showJargon = opts.jargon === "true";
 }
 
 function observeCaptions() {
@@ -308,7 +468,8 @@ function resetSpeakers() {
   speakers.forEach((value, key) => {
     speakers.set(key, []);
   });
-  updateVis();
+  jargonTracker = {};
+  renderVis();
 }
 
 function createPopup() {
@@ -395,6 +556,10 @@ function createPopup() {
 				<div>
 					<input type="checkbox" id="captions">
 					<label for="captions">Show captions</label>
+				</div>
+				<div>
+					<input type="checkbox" id="jargon">
+					<label for="jargon">Highlight Jargon</label>
 				</div>
 			</fieldset>
 		</section>
