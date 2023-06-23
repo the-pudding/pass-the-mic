@@ -1,3 +1,10 @@
 body {
 	width: 280px;
 }
+
+.ptm-popup ul {
+	margin: 0;
+	margin-bottom: 16px;
+	padding: 0;
+	padding-left: 16px;
+}

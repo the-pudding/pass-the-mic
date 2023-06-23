@@ -1,10 +1,16 @@
+const primary = "#FF77AA";
 const visPadding = 16;
 const minWidth = 160;
 
-const speakers = new Map();
+let speakers = new Map();
 const speakerNodes = new Map();
 const debug = true;
 const base = "pass-the-mic";
+const refreshSvg =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>';
+
+const shareSvg =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
 
 let settings;
 let threshold = 0;
@@ -20,29 +26,20 @@ function getStorage(key) {
   return window.localStorage.getItem(`${base}-${key}`);
 }
 
-// async function getStorage(key) {
-//   return new Promise((resolve, reject) => {
-//     try {
-//       chrome.storage.local.get(key, (value) => resolve(value[key]));
-//     } catch (err) {
-//       reject(err);
-//     }
-//   });
-// }
-
 function prepareData() {
   const all = [];
 
   for (let [key, captions] of speakers) {
-    // console.log(Object.values(captions));
     const splits = key.split("|");
     const name = splits[0];
     const count = d3.sum(Object.values(captions).map((d) => d.length));
     all.push({ key, name, count });
   }
 
-  const total = d3.sum(all.map((d) => d.count));
-  const percents = all.map((d) => ({ ...d, percent: d.count / total }));
+  const filtered = all.filter((d) => d.count > 0);
+
+  const total = d3.sum(filtered.map((d) => d.count));
+  const percents = filtered.map((d) => ({ ...d, percent: d.count / total }));
 
   // sort by count
   percents.sort((a, b) => b.percent - a.percent);
@@ -79,19 +76,19 @@ function prepareData() {
 
 function updateNumSpeakers() {
   const total = document.querySelectorAll("[data-self-name]").length;
-  const fac = d3.selectAll(".speaker.facilitator").size();
-  const numSpeakers = total - fac;
+  const ignoreCount = d3.selectAll(".speaker.ignore").size();
+  const numSpeakers = total - ignoreCount;
   threshold = (1 / numSpeakers) * 1.5;
 }
 
-function toggleFacilitator() {
-  const value = d3.select(this).classed("facilitator");
-  d3.select(this).classed("facilitator", !value);
+function toggleignore() {
+  const value = d3.select(this).classed("ignore");
+  d3.select(this).classed("ignore", !value);
   updateNumSpeakers();
 }
 
 function highlight(d) {
-  if (d3.select(this).classed("facilitator")) return false;
+  if (d3.select(this).classed("ignore")) return false;
   if (d.key === "Others") return false;
   return d.percent >= threshold;
 }
@@ -118,7 +115,7 @@ function updateVis() {
     const percent = label.append("span").attr("class", "percent").text("0%");
     percent.text((d) => d3.format(".0%")(d.percent));
 
-    speaker.on("click", toggleFacilitator);
+    speaker.on("click", toggleignore);
     return speaker;
   };
 
@@ -149,7 +146,6 @@ function handleTextChange(id, node) {
   node.parentNode.querySelectorAll("span").forEach((node) => {
     const index = +node.getAttribute("data-index");
     const text = node.innerText;
-    // console.log({ fn: "handleTextChange", index, text });
     speakers.get(id)[index] = text;
   });
 
@@ -164,14 +160,9 @@ function setIndex(id, node) {
 function handleSpeakerUpdate(id, mutationsList) {
   for (let mutation of mutationsList) {
     const type = mutation.type;
-    // const node = mutation.addedNodes[0];
     const target = mutation.target;
     const addedNode = mutation.addedNodes[0];
     const nodeName = addedNode?.nodeName;
-    // const removedNode = mutation.removedNodes[0];
-    // const removedNodeName = removedNode?.nodeName;
-
-    // console.log({ type, nodeName, target, addedNode });
 
     if (addedNode && nodeName === "SPAN") {
       setIndex(id, addedNode);
@@ -181,10 +172,6 @@ function handleSpeakerUpdate(id, mutationsList) {
     } else if (type === "characterData") {
       handleTextChange(id, target.parentNode);
     }
-
-    // if (mutation.removedNodes.length > 0) {
-    //   console.log("removedNodes", mutation.removedNodes[0]);
-    // }
   }
 }
 
@@ -193,13 +180,11 @@ function observeSpeaker(el) {
   const nameNode = el.childNodes[1];
   const speechNode = el.childNodes[2].childNodes[0];
   const name = nameNode.textContent;
-  // replace non alphanumeric characters with nothing
+
   const suffix = imgNode.src.split("/").pop().replace(/\W/g, "");
   const id = `${name}|${suffix}`;
 
   const exists = speakers.has(id);
-
-  // if (debug) console.log({ fn: "observerSpeaker", id, exists });
 
   if (!exists) speakers.set(id, []);
 
@@ -253,10 +238,6 @@ function handlePersonChange(mutationsList) {
     if (mutation.addedNodes.length) {
       observeSpeaker(mutation.addedNodes[0]);
     }
-
-    if (mutation.removedNodes.length) {
-      // console.log("removed", mutation.removedNodes[0]);
-    }
   }
 }
 
@@ -272,10 +253,7 @@ function updateOptions() {
   settings.forEach((key) => {
     const value = getStorage(key);
     opts[key] = value;
-    console.log({ key, value });
   });
-
-  console.log(opts);
 
   const visEl = document.querySelector(".ptm-vis");
 
@@ -289,22 +267,23 @@ function updateOptions() {
   if (opts.enable === "true") {
     if (display == "none" && captionsButtonEl) captionsButtonEl.click();
     if (!visEl) observeCaptions();
+    d3.select(captionsButtonEl).attr("data-ptm", "true");
+
+    d3.select(captionsButtonEl.parentNode).attr(
+      "title",
+      "Pass The Mic is enabled. Toggle caption visibility in the options."
+    );
   } else {
     // if we were previously running it AND captions are visible, hide them
     if (visEl && display !== "none") {
       if (captionsButtonEl) captionsButtonEl.click();
       d3.select(".ptm-vis").remove();
     }
+    d3.select(captionsButtonEl).attr("data-ptm", null);
+    d3.select(captionsButtonEl.parentNode).attr("title", null);
     // TODO disconnect observer
   }
 }
-
-// function storageChanged(changes) {
-//   for (let [key, { newValue }] of Object.entries(changes)) {
-//     options[key.replace(base, "")] = newValue;
-//   }
-//   updateOptions();
-// }
 
 function observeCaptions() {
   const visEl = document.createElement("div");
@@ -312,7 +291,6 @@ function observeCaptions() {
   document.body.appendChild(visEl);
 
   getYouName();
-  // TODO hide captions (if option enabled)
 
   const el = captionsContainerEl.childNodes[0].childNodes[0];
   const config = { attributes: false, childList: true, subtree: false };
@@ -325,6 +303,14 @@ function toggleOptions() {
   d3.select(el).classed("active", !d3.select(el).classed("active"));
 }
 
+function resetSpeakers() {
+  // iterate through all speakers and reset their count value
+  speakers.forEach((value, key) => {
+    speakers.set(key, []);
+  });
+  updateVis();
+}
+
 function createPopup() {
   const margin = 8;
   const outer = 96;
@@ -334,50 +320,64 @@ function createPopup() {
 
   const popup = d3.select("body").append("div").attr("class", "ptm-popup");
 
-  const btn = popup
+  const buttons = popup.append("div").attr("class", "buttons");
+
+  const btnOptions = buttons
     .append("button")
-    .attr("class", "icon")
+    .attr("class", "btn-options")
+    .attr("aria-label", "Pass The Mic options")
     .on("click", toggleOptions);
 
-  btn.append("span").attr("class", "text-outline").text("🎤");
+  btnOptions.append("span").attr("class", "icon text-outline").text("🎤");
+  btnOptions.append("span").attr("class", "label text-outline").text("options");
 
-  const svg = btn.append("svg").attr("width", "100%").attr("height", "100%");
+  const btnReset = buttons
+    .append("button")
+    .attr("class", "btn-reset")
+    .attr("aria-label", "reset Pass The Mic")
+    .on("click", resetSpeakers);
 
-  const g = svg
-    .append("g")
-    .attr("transform", `translate(${outer / 2}, ${outer / 2})`);
+  btnReset.append("span").attr("class", "icon text-outline").html(refreshSvg);
 
-  const above = g.append("g").attr("class", "above");
-  above
-    .append("path")
-    .attr("id", "text-arc-above")
-    .attr("d", `M -${w1 / 2} 0 A ${w1 / 2} ${w1 / 2} 0 0 1 ${w1 / 2} 0`);
+  btnReset.append("span").attr("class", "label text-outline").text("reset");
 
-  const below = g.append("g").attr("class", "below");
+  // const svg = btn.append("svg").attr("width", "100%").attr("height", "100%");
 
-  below
-    .append("path")
-    .attr("id", "text-arc-below")
-    .attr("d", `M -${w2 / 2} 0 A ${w2 / 2} ${w2 / 2} 0 0 0 ${w2 / 2} 0`);
+  // const g = svg
+  //   .append("g")
+  //   .attr("transform", `translate(${outer / 2}, ${outer / 2})`);
 
-  above
-    .append("text")
-    .append("textPath")
-    .attr("xlink:href", "#text-arc-above")
-    .style("text-anchor", "middle")
-    .attr("startOffset", "50%")
-    .text("Pass The Mic");
+  // const above = g.append("g").attr("class", "above");
+  // above
+  //   .append("path")
+  //   .attr("id", "text-arc-above")
+  //   .attr("d", `M -${w1 / 2} 0 A ${w1 / 2} ${w1 / 2} 0 0 1 ${w1 / 2} 0`);
 
-  below
-    .append("text")
-    .append("textPath")
-    .attr("xlink:href", "#text-arc-below")
-    .style("text-anchor", "middle")
-    .attr("startOffset", "50%")
-    .text("OPTIONS");
+  // const below = g.append("g").attr("class", "below");
 
-  above.attr("transform", "translate(0, 0)");
-  below.attr("transform", "translate(0, 6)");
+  // below
+  //   .append("path")
+  //   .attr("id", "text-arc-below")
+  //   .attr("d", `M -${w2 / 2} 0 A ${w2 / 2} ${w2 / 2} 0 0 0 ${w2 / 2} 0`);
+
+  // above
+  //   .append("text")
+  //   .append("textPath")
+  //   .attr("xlink:href", "#text-arc-above")
+  //   .style("text-anchor", "middle")
+  //   .attr("startOffset", "50%")
+  //   .text("Pass The Mic");
+
+  // below
+  //   .append("text")
+  //   .append("textPath")
+  //   .attr("xlink:href", "#text-arc-below")
+  //   .style("text-anchor", "middle")
+  //   .attr("startOffset", "50%")
+  //   .text("OPTIONS");
+
+  // above.attr("transform", "translate(0, 0)");
+  // below.attr("transform", "translate(0, 6)");
 
   const options = popup.append("div").attr("class", "options").html(`
 		<section id="intro">
@@ -399,9 +399,19 @@ function createPopup() {
 			</fieldset>
 		</section>
 
-		<section id="credits">
-			<p>By <a href="https://pudding.cool/author/russell-samora" target="_blank" rel="noreferrer">Russell Samora</a> for <a href="https://pudding.cool" target="_blank" rel="noreferrer">The
-				Pudding</a>.</p>
+		<section id="howto">
+			<h4><strong>Tips</strong></h4>
+			<p>Click a person to ignore from speaker count.</p>
+		</section>
+
+		<section id="outro">
+			<ul>
+				<li><a href="https://github.com/the-pudding/pass-the-mic/issues" target="_blank" rel="noreferrer">Report a bug</a></li>
+				<li><a href="https://github.com/the-pudding/pass-the-mic/issues?q=is%3Aissue+is%3Aopen+label%3Afeature" target="_blank" rel="noreferrer">Feature roadmap</a></li>
+				<li><a href="mailto:russell@pudding.cool">Feature requests</a></li>
+				<li>By <a href="https://pudding.cool/author/russell-samora" target="_blank" rel="noreferrer">Russell Samora</a> for <a href="https://pudding.cool" target="_blank" rel="noreferrer">The
+					Pudding</a>.</li>				
+			</ul>
 		</section>
 	`);
 
@@ -418,7 +428,6 @@ function createPopup() {
     const value = getStorage(key) === "true";
     document.getElementById(key).checked = value || false;
     document.getElementById(key).addEventListener("change", (e) => {
-      console.log("change");
       setStorage(key, e.target.checked);
       updateOptions();
     });
@@ -430,7 +439,6 @@ async function init(btn) {
 
   captionsButtonEl = btn;
   captionsContainerEl = document.querySelector(".a4cQT");
-  // chrome.storage.local.onChanged.addListener(storageChanged);
 
   updateOptions();
 }
