@@ -160,7 +160,7 @@
 	fill: #000;
 } */
 
-.ptm-popup .options {
+.ptm-popup .settings {
 	background: var(--primary);
 	color: #000;
 	padding: 16px;
@@ -170,7 +170,7 @@
 	border-radius: 6px;
 }
 
-.ptm-popup .options.active {
+.ptm-popup .settings.active {
 	display: block;
 }
 
@@ -258,7 +258,7 @@ button[data-ptm="true"] {
 	border: none;
 }
 
-.ptm-popup .buttons .btn-options {
+.ptm-popup .buttons .btn-settings {
 	width: 64px;
 	height: 64px;
 	font-size: 32px;

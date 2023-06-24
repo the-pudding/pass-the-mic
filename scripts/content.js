@@ -113,7 +113,7 @@ const shareSvg =
 
 let speakers = new Map();
 let jargonTracker = {};
-let settings;
+let options;
 let nameYou = "You";
 let captionsButtonEl;
 let captionsContainerEl;
@@ -411,7 +411,7 @@ function getYouName() {
 
 function updateOptions() {
   const opts = {};
-  settings.forEach((key) => {
+  options.forEach((key) => {
     const value = getStorage(key);
     opts[key] = value;
   });
@@ -468,8 +468,8 @@ function observeCaptions() {
   observer.observe(el, config);
 }
 
-function toggleOptions() {
-  const el = ".ptm-popup .options";
+function toggleSettings() {
+  const el = ".ptm-popup .settings";
   d3.select(el).classed("active", !d3.select(el).classed("active"));
 }
 
@@ -493,14 +493,17 @@ function createPopup() {
 
   const buttons = popup.append("div").attr("class", "buttons");
 
-  const btnOptions = buttons
+  const btnSettings = buttons
     .append("button")
-    .attr("class", "btn-options")
-    .attr("aria-label", "Pass The Mic options")
-    .on("click", toggleOptions);
+    .attr("class", "btn-settings")
+    .attr("aria-label", "Pass The Mic settings")
+    .on("click", toggleSettings);
 
-  btnOptions.append("span").attr("class", "icon text-outline").text("🎤");
-  btnOptions.append("span").attr("class", "label text-outline").text("options");
+  btnSettings.append("span").attr("class", "icon text-outline").text("🎤");
+  btnSettings
+    .append("span")
+    .attr("class", "label text-outline")
+    .text("settings");
 
   const btnReset = buttons
     .append("button")
@@ -550,15 +553,15 @@ function createPopup() {
   // above.attr("transform", "translate(0, 0)");
   // below.attr("transform", "translate(0, 6)");
 
-  const options = popup.append("div").attr("class", "options").html(`
+  const settings = popup.append("div").attr("class", "settings").html(`
 		<section id="intro">
 			<h2>Pass The Mic</h2>
 			<p class="description">Visualize how much each person is talking in Google Meet</p>
 		</section>
 		
-		<section id="settings">
+		<section id="options">
 			<fieldset>
-				<legend>Settings</legend>
+				<legend>options</legend>
 				<div class="flex">
 					<input type="checkbox" id="enable" checked>
 					<label for="enable">Enable</label>
@@ -596,16 +599,16 @@ function createPopup() {
 		</section>
 	`);
 
-  options
+  settings
     .append("button")
     .text("Close")
-    .on("click", () => options.classed("active", false));
+    .on("click", () => settings.classed("active", false));
 
-  settings = [...document.querySelectorAll(".ptm-popup .options input")].map(
+  options = [...document.querySelectorAll(".ptm-popup .settings input")].map(
     (input) => input.id
   );
 
-  settings.forEach((key) => {
+  options.forEach((key) => {
     const value = getStorage(key);
 
     // set based on local storage values or defaults

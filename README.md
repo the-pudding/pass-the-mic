@@ -1,4 +1,5 @@
 # Pass The Mic
-A Chrome Extensions for visualizing how much each person is talking in Google Meet.
+A browser extension to visualize how much each person is talking in Google Meet.
 
-## Misc
+## Installation
+* [Chrome](https://chrome.google.com/webstore/detail/pass-the-mic/pjhefpcmnfnepcpcgbjgnphmpalihbhl?hl=en&authuser=1)
