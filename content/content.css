@@ -114,7 +114,6 @@
 
 
 .ptm-popup {
-	--primary: #FF77AA;
 	position: absolute;
 	width: 320px;
 	height: 100%;
@@ -265,4 +264,89 @@ button[data-ptm="true"] {
 	font-weight: 800;
 	pointer-events: none;	
 	transform-origin: 50% 50%;
+}
+
+.ptm-share {
+	--stroke-width: 1px;
+	font-family: var(--font-system);
+	position: absolute;
+	width: 90%;
+	top: 50%;
+	left: 50%;
+	max-width: 640px;
+	transform: translate(-50%, -50%);
+	z-index: 9999999;
+	background: var(--primary);
+	padding: 16px;
+	color: #000;
+	border-radius: 6px;
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+}
+
+.ptm-share img {
+		width: 48px;
+		border-radius: 50%;
+		display: inline-block;
+		margin-right: 8px;
+		border: 1px solid #000;
+}
+
+.ptm-share ul {
+	margin: 0;
+	padding: 0;
+}
+
+.ptm-share li {
+	list-style-type: none;
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+	font-weight: 800;
+}
+
+.ptm-share li .info {
+	line-height: 1;
+	margin: 0;
+	padding: 0;
+	margin-bottom: 4px;
+	font-size: 14px !important;
+}
+
+.ptm-share li .right {
+	flex: 1;
+}
+
+.ptm-share li .percent {
+	font-weight: 500;
+	margin-left: 8px;
+}
+
+
+.ptm-share li .bar {
+	background: #000;
+	height: 16px;
+	border-radius: 2px;
+	opacity: 0.5;
+	display: block;
+}
+
+.ptm-share h3 {
+	margin-top: 0;
+	text-align: center;
+}
+
+.ptm-share .no-data {
+	text-align: center;
+}
+
+.ptm-share button.close {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background: transparent;
+	border: none;
+	color: #000;
+	line-height: 1;
+	cursor: pointer;
 }

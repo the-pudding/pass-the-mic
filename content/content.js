@@ -48,6 +48,7 @@ const jargonTerms = [
   "going forward",
   "growth hacking",
   "guru",
+  "how the sausage is made",
   "ideate",
   "ideation",
   "in the weeds",
@@ -105,14 +106,16 @@ const jargonTerms = [
   "window of opportunity",
 ];
 
-const speakerNodes = new Map();
 const debug = true;
 const base = "pass-the-mic";
 const refreshSvg =
   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>';
 
 const shareSvg =
-  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share-2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>';
+
+const closeSvg =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
 
 let speakers = new Map();
 let jargonTracker = {};
@@ -133,25 +136,49 @@ function getStorage(key) {
   return window.localStorage.getItem(`${base}-${key}`);
 }
 
-function prepareData() {
+function displayName({ name }) {
+  return name === "You" ? nameYou : name;
+}
+
+function displayPercent({ percent }) {
+  return d3.format(".0%")(percent);
+}
+
+function prepareData(raw) {
   const all = [];
 
-  for (let [key, captions] of speakers) {
-    const splits = key.split("|");
-    const name = splits[0];
-    const count = d3.sum(
-      Object.values(captions).map((d) => d.replace(/ /g, "").length)
-    );
-    all.push({ key, name, count });
+  for (let [key, value] of speakers) {
+    const name = value.name;
+    const img = value.img;
+    const captions = Object.values(value.captions);
+
+    let charCount = 0;
+    // let words = [];
+
+    captions.forEach((c) => {
+      const chars = c.replace(/ /g, "").length;
+      charCount += chars;
+      // words = words.concat(c.split(" "));
+    });
+
+    // const wordCount = words.length;
+    // const wordCountUnique = [...new Set(words)].length;
+
+    all.push({ key, name, img, charCount });
   }
 
-  const filtered = all.filter((d) => d.count > 0);
+  const filtered = all.filter((d) => d.charCount > 0);
 
-  const total = d3.sum(filtered.map((d) => d.count));
-  const percents = filtered.map((d) => ({ ...d, percent: d.count / total }));
+  const total = d3.sum(filtered.map((d) => d.charCount));
+  const percents = filtered.map((d) => ({
+    ...d,
+    percent: d.charCount / total,
+  }));
 
   // sort by count
   percents.sort((a, b) => b.percent - a.percent);
+
+  if (raw) return percents;
 
   // TODO min width
   const w =
@@ -226,17 +253,14 @@ function renderVis() {
 
     speaker.append("div").attr("class", "bar");
 
-    speaker.style("width", (d) => d3.format(".1%")(d.percent));
+    speaker.style("width", displayPercent);
 
     const label = speaker.append("p").attr("class", "label text-outline");
 
-    label
-      .append("span")
-      .attr("class", "name")
-      .text((d) => (d.name === "You" ? nameYou : d.name));
+    label.append("span").attr("class", "name").text(displayName);
 
     const percent = label.append("span").attr("class", "percent").text("0%");
-    percent.text((d) => d3.format(".0%")(d.percent));
+    percent.text(displayPercent);
 
     speaker.on("click", toggleIgnore);
 
@@ -269,7 +293,7 @@ function renderVis() {
     .classed("highlight", highlight)
     .style("width", (d) => d3.format(".1%")(d.percent));
 
-  joined.select(".percent").text((d) => d3.format(".0%")(d.percent));
+  joined.select(".percent").text(displayPercent);
 
   // const member = joined
   //   .select(".members")
@@ -345,7 +369,7 @@ function handleTextChange(id, node) {
   node.parentNode.querySelectorAll("span").forEach((node) => {
     const index = +node.getAttribute("data-index");
     const text = cleanText(node.innerText);
-    speakers.get(id)[index] = text;
+    speakers.get(id).captions[index] = text;
     if (showJargon) {
       newJargon = checkForJargon(text);
       if (newJargon.length) renderJargon(id, index, newJargon);
@@ -356,7 +380,7 @@ function handleTextChange(id, node) {
 }
 
 function setIndex(id, node) {
-  const newIndex = speakers.get(id).length || 0;
+  const newIndex = speakers.get(id).captions.length || 0;
   node.setAttribute("data-index", newIndex);
 }
 
@@ -384,12 +408,18 @@ function observeSpeaker(el) {
   const speechNode = el.childNodes[2].childNodes[0];
   const name = nameNode.textContent;
 
-  const suffix = imgNode.src.split("/").pop().replace(/\W/g, "");
+  const img = imgNode.src;
+  const suffix = img.split("/").pop().replace(/\W/g, "");
   const id = `${name}|${suffix}`;
 
   const exists = speakers.has(id);
 
-  if (!exists) speakers.set(id, []);
+  if (!exists)
+    speakers.set(id, {
+      captions: [],
+      name,
+      img,
+    });
 
   const node = speechNode.childNodes[0];
 
@@ -518,10 +548,49 @@ function toggleSettings() {
 function resetSpeakers() {
   // iterate through all speakers and reset their count value
   speakers.forEach((value, key) => {
-    speakers.set(key, []);
+    speakers.get(key).captions = [];
   });
   jargonTracker = {};
   renderVis();
+}
+
+function shareResults() {
+  const data = prepareData(true);
+
+  const share = d3
+    .select("body")
+    .append("div")
+    .attr("class", "ptm-share")
+    .on("click", () => share.remove());
+  share.append("h3").text("Share of Talking Time");
+
+  share
+    .append("button")
+    .attr("class", "close")
+    .html(closeSvg)
+    .on("click", () => share.remove());
+
+  if (data.length) {
+    const ul = share.append("ul");
+    const li = ul.selectAll("li").data(data).join("li");
+
+    li.append("img").attr("src", (d) => d.img);
+
+    const right = li.append("div").attr("class", "right");
+
+    const info = right.append("p").attr("class", "info");
+    info.append("span").attr("class", "name").text(displayName);
+    info.append("span").attr("class", "percent").text(displayPercent);
+
+    const graph = right.append("div").attr("class", "graph");
+
+    graph
+      .append("span")
+      .attr("class", "bar")
+      .style("width", (d) => d3.format(".1%")(d.percent));
+  } else {
+    share.append("p").attr("class", "no-data").text("No data to share");
+  }
 }
 
 function createPopup() {
@@ -550,12 +619,22 @@ function createPopup() {
   const btnReset = buttons
     .append("button")
     .attr("class", "btn-reset")
-    .attr("aria-label", "reset Pass The Mic")
+    .attr("aria-label", "reset Pass The Mic speakers")
     .on("click", resetSpeakers);
 
   btnReset.append("span").attr("class", "icon text-outline").html(refreshSvg);
 
   btnReset.append("span").attr("class", "label text-outline").text("reset");
+
+  const btnShare = buttons
+    .append("button")
+    .attr("class", "btn-share")
+    .attr("aria-label", "share Pass The Mic results")
+    .on("click", shareResults);
+
+  btnShare.append("span").attr("class", "icon text-outline").html(shareSvg);
+
+  btnShare.append("span").attr("class", "label text-outline").text("share");
 
   const settings = popup.append("div").attr("class", "settings").html(`
 		<section id="intro">
