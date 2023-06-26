@@ -297,7 +297,8 @@ function renderJargon(id, index, terms) {
       );
       const scale = 1 + Math.random() * 3;
       const left = 20 + Math.random() * 60;
-      const top = 10 + Math.random() * 20;
+      const top = 10 + Math.random() * 10;
+      const duration = 2500 + Math.random() * 1500;
       const fs = 14;
       d3.select("body")
         .append("p")
@@ -309,7 +310,7 @@ function renderJargon(id, index, terms) {
         .style("transform", `rotate(${rot1}deg)`)
         .transition()
         .ease(d3.easeLinear)
-        .duration(3000)
+        .duration(duration)
         .style("top", `${top}%`)
         .style("opacity", 0)
         .style("transform", `scale(${scale}) rotate(${rot2}deg)`)
@@ -558,8 +559,7 @@ function createPopup() {
 
   const settings = popup.append("div").attr("class", "settings").html(`
 		<section id="intro">
-			<h2>Pass The Mic</h2>
-			<p class="description">Visualize how much each person is talking in Google Meet</p>
+			<h3>Pass The Mic Settings</h3>
 		</section>
 		
 		<section id="options">
@@ -588,7 +588,7 @@ function createPopup() {
 
 		<section id="howto">
 			<h4><strong>Tips</strong></h4>
-			<p>Click a person to ignore from speaker count.</p>
+			<p>Click a person to remove them from the speaker count.</p>
 		</section>
 
 		<section id="outro">
