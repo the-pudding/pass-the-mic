@@ -202,6 +202,7 @@ function prepareData(raw) {
         return {
           percent: d3.sum(members, (d) => d.percent),
           name: "Others",
+          key: "Others",
           members,
         };
       return members[0];
@@ -241,15 +242,29 @@ function hideMembers() {
   d3.select(this).select(".members").classed("visible", false);
 }
 
+function memberHtml(d) {
+  return d.members
+    .map(
+      (m) =>
+        `<li class="member text-outline">
+			<span class="name">${displayName(m)}</span>
+			<span class="percent">${displayPercent(m)}</span>
+		</li>`
+    )
+    .join("");
+}
+
 function renderVis() {
   const data = prepareData();
 
   const speakerEnter = (enter) => {
     const speaker = enter.append("div");
 
-    speaker.attr("class", "speaker").attr("aria-role", "button");
-    // .on("mouseenter", showMembers)
-    // .on("mouseleave", hideMembers);
+    speaker
+      .attr("class", "speaker")
+      .attr("aria-role", "button")
+      .on("mouseenter", showMembers)
+      .on("mouseleave", hideMembers);
 
     speaker.append("div").attr("class", "bar");
 
@@ -264,24 +279,10 @@ function renderVis() {
 
     speaker.on("click", toggleIgnore);
 
-    // speaker.append("ul").attr("class", "members");
+    speaker.append("ul").attr("class", "members");
 
     return speaker;
   };
-
-  // const memberEnter = (enter) => {
-  //   const member = enter.append("li").attr("class", "member text-outline");
-  //   member
-  //     .append("span")
-  //     .attr("class", "name")
-  //     .text((d) => (d.name === "You" ? nameYou : d.name));
-
-  //   member
-  //     .append("span")
-  //     .attr("class", "percent")
-  //     .text((d) => d3.format(".0%")(d.percent));
-  //   return member;
-  // };
 
   const joined = d3
     .select(".ptm-vis")
@@ -295,16 +296,13 @@ function renderVis() {
 
   joined.select(".percent").text(displayPercent);
 
-  // const member = joined
-  //   .select(".members")
-  //   .data((d) => {
-  //     console.log(d);
-  //     return d.members || [];
-  //   })
-  //   .selectAll(".member")
-  //   .join(memberEnter);
+  const joinedOthers = joined.filter((d) => d.key === "Others");
 
-  // member.select(".percent").text((d) => d3.format(".0%")(d.percent));
+  if (joinedOthers.size()) {
+    const member = joinedOthers.select(".members").html(memberHtml);
+
+    member.select(".percent").text(displayPercent);
+  }
 }
 
 function renderJargon(id, index, terms) {

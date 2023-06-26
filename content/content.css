@@ -74,12 +74,13 @@
 
 .ptm-vis .speaker .members {
 	position: absolute;
-	top: 100%;
+	top: calc(100% + 4px);
 	right: 0;
 	display: none;
 	background: rgba(0,0,0,0.75);
 	padding: 8px;
 	margin: 0;
+	border-radius: 4px;
 }
 
 .ptm-vis .speaker .members.visible {
@@ -91,7 +92,7 @@
 	font-size: 14px !important;
 	font-weight: 800;
 	line-height: 1;
-	margin-bottom: 8px;
+	margin: 4px 0;
 }
 
 .ptm-vis .speaker .members li span  {
