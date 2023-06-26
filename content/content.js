@@ -442,28 +442,8 @@ function observeSpeaker(el) {
   observer.observe(speechNode, config);
 }
 
-function updateSpeakers() {
-  // const videos = document.querySelectorAll("[data-layout]");
-  // videos.forEach((video) => {
-  //   const name = video
-  //     .querySelector("[data-self-name]")
-  //     .getAttribute("data-self-name");
-  //   const suffix = video
-  //     .querySelector("img")
-  //     .getAttribute("src")
-  //     .split("/")
-  //     .pop()
-  //     .replace(/\W/g, "");
-  //   const id = `${name}|${suffix}`;
-  //   const exists = speakers.has(id);
-  //   if (!exists) speakers.set(id, []);
-  //   console.log(id);
-  // });
-  updateNumSpeakers();
-}
-
 function handlePersonChange(mutationsList) {
-  updateSpeakers();
+  updateNumSpeakers();
 
   for (let mutation of mutationsList) {
     if (mutation.addedNodes.length) {
