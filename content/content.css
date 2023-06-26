@@ -32,7 +32,7 @@
 }
 
 .ptm-vis .speaker.ignore {
-	--color: #aaa;
+	--color: #888;
 }
 
 .ptm-vis .speaker.highlight:not(.ignore) .label:after {
@@ -43,13 +43,13 @@
 	background: var(--color);
 }
 
-.ptm-vis .speaker.ignore .label:after {
+/* .ptm-vis .speaker.ignore .label:after {
 	content: "📢";
 	display: inline-block;
 	margin-left: 4px;
 	padding: 0 4px;
 	background: var(--color);
-}
+} */
 
 .ptm-vis .speaker .label {
 	font-size: 16px !important;
@@ -70,6 +70,32 @@
 	height: 6px;
 	border-radius: 2px;
 	background: var(--color);
+}
+
+.ptm-vis .speaker .members {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	display: none;
+	background: rgba(0,0,0,0.75);
+	padding: 8px;
+	margin: 0;
+}
+
+.ptm-vis .speaker .members.visible {
+	display: block;
+}
+
+.ptm-vis .speaker .members li  {
+	list-style-type: none;
+	font-size: 14px !important;
+	font-weight: 800;
+	line-height: 1;
+	margin-bottom: 8px;
+}
+
+.ptm-vis .speaker .members li span  {
+	font-weight: 500;
 }
 
 .ptm-vis .text-outline {

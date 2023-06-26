@@ -1,7 +1,7 @@
 const primary = "#FF77AA";
 const visPadding = 16;
 const minWidth = 160;
-const jargon = [
+const jargonTerms = [
   "action plan",
   "actionable",
   "agile",
@@ -14,9 +14,9 @@ const jargon = [
   "balls in the air",
   "bandwidth",
   "bang for your buck",
+  "big bang for the buck",
   "bells and whistles",
   "best in class",
-  "big bang for the buck",
   "bleeding edge",
   "blue ocean",
   "blue sky thinking",
@@ -25,6 +25,7 @@ const jargon = [
   "buy in",
   "change agent",
   "circle back",
+  "circle the wagons",
   "close of play",
   "core competency",
   "corporate culture",
@@ -52,7 +53,6 @@ const jargon = [
   "in the weeds",
   "key takeaway",
   "laser focused",
-  "learnings",
   "lipstick on a pig",
   "lots of moving parts",
   "low hanging fruit",
@@ -69,16 +69,18 @@ const jargon = [
   "organic growth",
   "out of pocket",
   "pain point",
+  "pain points",
   "par for the course",
   "paradigm shift",
   "peel the onion",
-  "ping",
   "pivot",
   "price point",
+  "price points",
   "proactive",
   "productize",
   "push the envelope",
   "roadmap",
+  "reinvent the wheel",
   "run it up the flagpole",
   "run the numbers",
   "scalability",
@@ -90,6 +92,7 @@ const jargon = [
   "take offline",
   "take this offline",
   "test the water",
+  "test the waters",
   "30000 foot view",
   "thought leader",
   "thought leadership",
@@ -203,6 +206,14 @@ function highlight(d) {
   return d.percent >= threshold;
 }
 
+function showMembers() {
+  d3.select(this).select(".members").classed("visible", true);
+}
+
+function hideMembers() {
+  d3.select(this).select(".members").classed("visible", false);
+}
+
 function renderVis() {
   const data = prepareData();
 
@@ -210,6 +221,8 @@ function renderVis() {
     const speaker = enter.append("div");
 
     speaker.attr("class", "speaker").attr("aria-role", "button");
+    // .on("mouseenter", showMembers)
+    // .on("mouseleave", hideMembers);
 
     speaker.append("div").attr("class", "bar");
 
@@ -226,8 +239,25 @@ function renderVis() {
     percent.text((d) => d3.format(".0%")(d.percent));
 
     speaker.on("click", toggleIgnore);
+
+    // speaker.append("ul").attr("class", "members");
+
     return speaker;
   };
+
+  // const memberEnter = (enter) => {
+  //   const member = enter.append("li").attr("class", "member text-outline");
+  //   member
+  //     .append("span")
+  //     .attr("class", "name")
+  //     .text((d) => (d.name === "You" ? nameYou : d.name));
+
+  //   member
+  //     .append("span")
+  //     .attr("class", "percent")
+  //     .text((d) => d3.format(".0%")(d.percent));
+  //   return member;
+  // };
 
   const joined = d3
     .select(".ptm-vis")
@@ -240,6 +270,17 @@ function renderVis() {
     .style("width", (d) => d3.format(".1%")(d.percent));
 
   joined.select(".percent").text((d) => d3.format(".0%")(d.percent));
+
+  // const member = joined
+  //   .select(".members")
+  //   .data((d) => {
+  //     console.log(d);
+  //     return d.members || [];
+  //   })
+  //   .selectAll(".member")
+  //   .join(memberEnter);
+
+  // member.select(".percent").text((d) => d3.format(".0%")(d.percent));
 }
 
 function renderJargon(id, index, terms) {
@@ -294,7 +335,7 @@ function cleanText(text) {
 }
 
 function checkForJargon(text) {
-  return jargon.filter((term) => text.includes(` ${term} `));
+  return jargonTerms.filter((term) => text.includes(` ${term} `));
 }
 
 function handleTextChange(id, node) {
@@ -515,44 +556,6 @@ function createPopup() {
 
   btnReset.append("span").attr("class", "label text-outline").text("reset");
 
-  // const svg = btn.append("svg").attr("width", "100%").attr("height", "100%");
-
-  // const g = svg
-  //   .append("g")
-  //   .attr("transform", `translate(${outer / 2}, ${outer / 2})`);
-
-  // const above = g.append("g").attr("class", "above");
-  // above
-  //   .append("path")
-  //   .attr("id", "text-arc-above")
-  //   .attr("d", `M -${w1 / 2} 0 A ${w1 / 2} ${w1 / 2} 0 0 1 ${w1 / 2} 0`);
-
-  // const below = g.append("g").attr("class", "below");
-
-  // below
-  //   .append("path")
-  //   .attr("id", "text-arc-below")
-  //   .attr("d", `M -${w2 / 2} 0 A ${w2 / 2} ${w2 / 2} 0 0 0 ${w2 / 2} 0`);
-
-  // above
-  //   .append("text")
-  //   .append("textPath")
-  //   .attr("xlink:href", "#text-arc-above")
-  //   .style("text-anchor", "middle")
-  //   .attr("startOffset", "50%")
-  //   .text("Pass The Mic");
-
-  // below
-  //   .append("text")
-  //   .append("textPath")
-  //   .attr("xlink:href", "#text-arc-below")
-  //   .style("text-anchor", "middle")
-  //   .attr("startOffset", "50%")
-  //   .text("OPTIONS");
-
-  // above.attr("transform", "translate(0, 0)");
-  // below.attr("transform", "translate(0, 6)");
-
   const settings = popup.append("div").attr("class", "settings").html(`
 		<section id="intro">
 			<h2>Pass The Mic</h2>
@@ -637,11 +640,9 @@ function createPopup() {
 }
 
 async function init(btn) {
-  createPopup();
-
   captionsButtonEl = btn;
   captionsContainerEl = document.querySelector(".a4cQT");
-
+  createPopup();
   updateOptions();
 }
 
