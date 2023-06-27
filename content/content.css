@@ -17,7 +17,7 @@
 	max-width: calc(1200px);
 	font-family: var(--ptm-font);
 	display: flex;
-	border-radius: 4px;
+	border-radius: 6px;
 }
 
 .ptm-vis .speaker {
@@ -81,7 +81,7 @@
 	background: rgba(0,0,0,0.75);
 	padding: 8px;
 	margin: 0;
-	border-radius: 4px;
+	border-radius: 6px;
 }
 
 .ptm-vis .speaker .members.visible {
@@ -113,7 +113,6 @@
 		var(--stroke-width-n) var(--stroke-width) 0 var(--color-text-outline, #fff),
 		var(--stroke-width-n) 0 0 var(--color-text-outline, #fff); 
 }
-
 
 .ptm-popup {
 	position: absolute;
@@ -161,8 +160,14 @@
 	margin: 8px 0;
 }
 
+.ptm-popup fieldset input[type="range"] {
+	width: 100%;
+}
+
 .ptm-popup fieldset div p {
-	margin: 8px 0;
+	margin: 4px 0;
+	display: flex;
+	justify-content: space-between;
 	font-size: 12px !important;
 }
 
@@ -367,7 +372,6 @@ button[data-ptm="true"] {
 	margin-left: 8px;
 }
 
-
 .ptm-share li .bar {
 	background: var(--ptm-secondary);
 	height: 16px;
@@ -409,7 +413,7 @@ button[data-ptm="true"] {
 	pointer-events: none;
 	transform: translate(-50%, -100%);
 	transition: all 0.25s ease-in-out;
-	border-radius: 4px;
+	border-radius: 6px;
 	color: #000;
 }
 

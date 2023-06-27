@@ -234,11 +234,15 @@ function highlight(d) {
 }
 
 function showMembers() {
-  d3.select(this).select(".members").classed("visible", true);
+  const d = d3.select(this).datum();
+  if (d.key === "Others")
+    d3.select(this).select(".members").classed("visible", true);
 }
 
 function hideMembers() {
-  d3.select(this).select(".members").classed("visible", false);
+  const d = d3.select(this).datum();
+  if (d.key === "Others")
+    d3.select(this).select(".members").classed("visible", false);
 }
 
 function memberHtml(d) {
@@ -686,8 +690,8 @@ function createPopup() {
 				</div>
 				<div>
 					<label class="label--threshold" for="threshold">Highlight threshold: <span>50%</span></label>
-					<p>0% = 1x, 100% = 2x equal share</p>
 					<input type="range" id="threshold" value="50">
+					<p><span>Exact</span><span>Padded</span></p>
 				</div>
 
 			</fieldset>
