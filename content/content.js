@@ -692,6 +692,7 @@ function createPopup() {
 				</div>
 				<div>
 					<label class="label--threshold" for="threshold">Highlight threshold: <span>50%</span></label>
+					<p><em>Dynamic based on the number of people</em></p>
 					<input type="range" id="threshold" value="50" min="0" max="100">
 					<p><span>exact</span><span>very padded</span></p>
 				</div>

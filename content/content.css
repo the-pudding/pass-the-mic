@@ -166,7 +166,7 @@
 }
 
 .ptm-popup fieldset div p {
-	margin: 0;
+	margin: 4px 0;
 	display: flex;
 	justify-content: space-between;
 	font-size: 12px !important;
