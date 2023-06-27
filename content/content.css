@@ -1,6 +1,7 @@
 :root {
-	--primary: #FF77AA;
-	--font-system: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	--ptm-primary: #FF77AA;
+	--ptm-secondary: #803c54;
+	--ptm-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .ptm-vis {
@@ -14,7 +15,7 @@
   background-color: rgba(0,0,0,0.75);
 	width: calc(100% - 192px);
 	max-width: calc(1200px);
-	font-family: var(--font-system);
+	font-family: var(--ptm-font);
 	display: flex;
 	border-radius: 4px;
 }
@@ -28,7 +29,7 @@
 }
 
 .ptm-vis .speaker.highlight:not(.ignore) {
-	--color: var(--primary);
+	--color: var(--ptm-primary);
 }
 
 .ptm-vis .speaker.ignore {
@@ -44,7 +45,7 @@
 }
 
 /* .ptm-vis .speaker.ignore .label:after {
-	content: "📢";
+	content: "❌";
 	display: inline-block;
 	margin-left: 4px;
 	padding: 0 4px;
@@ -121,14 +122,16 @@
 	top: 96px;
 	left: 16px;
 	z-index: 999999;
-	font-family: var(--font-system);
+	font-family: var(--ptm-font);
 }
 
 .ptm-popup .settings {
-	background: var(--primary);
+	background: var(--ptm-primary);
 	color: #000;
 	padding: 16px;
-	position: relative;
+	position: absolute;
+	top: 72px;
+	left: 0;
 	z-index: 9999999;
 	display: none;
 	border-radius: 6px;
@@ -188,7 +191,7 @@
 }
 
 button[data-ptm="true"] {
-	background: var(--primary) !important;
+	background: var(--ptm-primary) !important;
 	pointer-events: none !important;
 }
 
@@ -208,18 +211,25 @@ button[data-ptm="true"] {
 	width: 42px;
 	height: 42px;
 	border-radius: 50%;
-	background: var(--primary);
+	background: var(--ptm-primary);
 	color: #000;
 	line-height: 1;
 	text-align: center;
 	cursor: pointer;
 	opacity: 0.75;
 	transition: opacity 0.25s ease-in-out;
-	background: var(--primary);
+	background: var(--ptm-primary);
 	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
 	position: relative;
 	margin-bottom: 8px;
 	border: none;
+}
+.ptm-popup .buttons .btn-enable {
+	display: none;
+}
+
+.ptm-popup .buttons .btn-enable.active {
+	display: block;
 }
 
 .ptm-popup .buttons .btn-settings {
@@ -231,7 +241,7 @@ button[data-ptm="true"] {
 .ptm-popup .buttons button span:last-of-type {
 	position: absolute;
 	top: 50%;
-	right: -16px;
+	right: -8px;
 	transform: translate(100%, 0%);
 	font-size: 14px !important;
 	font-weight: 800;
@@ -256,11 +266,11 @@ button[data-ptm="true"] {
 
 .ptm-jargon {
 	--stroke-width: 2px;
-	font-family: var(--font-system);
+	font-family: var(--ptm-font);
 	position: absolute;
 	text-transform: uppercase;
 	z-index: 9999999;
-	color: var(--primary);
+	color: var(--ptm-primary);
 	line-height: 1;
 	font-weight: 800;
 	pointer-events: none;	
@@ -269,7 +279,7 @@ button[data-ptm="true"] {
 
 .ptm-share {
 	--stroke-width: 1px;
-	font-family: var(--font-system);
+	font-family: var(--ptm-font);
 	position: absolute;
 	width: 90%;
 	top: 50%;
@@ -277,7 +287,7 @@ button[data-ptm="true"] {
 	max-width: 640px;
 	transform: translate(-50%, -50%);
 	z-index: 9999999;
-	background: var(--primary);
+	background: var(--ptm-primary);
 	padding: 16px;
 	color: #000;
 	border-radius: 6px;
@@ -291,6 +301,27 @@ button[data-ptm="true"] {
 		display: inline-block;
 		margin-right: 8px;
 		border: 1px solid #000;
+}
+
+.ptm-share .chart {
+	position: relative;
+}
+
+.ptm-share .equity {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 1px;
+	border-left: 1px dashed rgba(0,0,0,0.5);
+}
+
+.ptm-share .equity p {
+	margin: 0;
+	font-size: 12px !important;
+	white-space: nowrap;
+	width: 96px;
+	transform: translate(-50%, -125%);
+	text-align: center;
 }
 
 .ptm-share ul {
@@ -315,6 +346,7 @@ button[data-ptm="true"] {
 }
 
 .ptm-share li .right {
+	position: relative;
 	flex: 1;
 }
 
@@ -325,15 +357,15 @@ button[data-ptm="true"] {
 
 
 .ptm-share li .bar {
-	background: #000;
+	background: var(--ptm-secondary);
 	height: 16px;
 	border-radius: 2px;
-	opacity: 0.5;
 	display: block;
 }
 
 .ptm-share h3 {
 	margin-top: 0;
+	margin-bottom: 24px;
 	text-align: center;
 }
 
@@ -350,4 +382,27 @@ button[data-ptm="true"] {
 	color: #000;
 	line-height: 1;
 	cursor: pointer;
+}
+
+.ptm-caption-explanation {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	background: var(--ptm-primary);
+	padding: 8px;
+	font-size: 14px !important;
+	z-index: 9999999;
+	line-height: 1;
+	opacity: 0;
+	pointer-events: none;
+	transform: translate(-50%, -100%);
+	transition: all 0.25s ease-in-out;
+	border-radius: 4px;
+	color: #000;
+}
+
+.ptm-caption-explanation.visible {
+	display: block;
+	opacity: 1;
+	transform: translate(-50%, -125%);
 }

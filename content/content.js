@@ -106,7 +106,6 @@ const jargonTerms = [
   "window of opportunity",
 ];
 
-const debug = true;
 const base = "pass-the-mic";
 const refreshSvg =
   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>';
@@ -459,6 +458,26 @@ function getYouName() {
   nameYou = a ? a.substring(a.lastIndexOf('"') + 1, a.length) : "You";
 }
 
+function showTip() {
+  const span = d3.select(this);
+  span.style("position", "relative");
+
+  const div = span
+    .append("div")
+    .attr("class", "ptm-caption-explanation")
+    .html(
+      "<strong>[Pass The Mic enabled]</strong> toggle caption visibility in settings"
+    );
+
+  setTimeout(() => {
+    div.classed("visible", true);
+  }, 17);
+}
+
+function hideTip() {
+  d3.select(".ptm-caption-explanation").remove();
+}
+
 function updateOptions() {
   const opts = {};
   options.forEach((key) => {
@@ -476,10 +495,15 @@ function updateOptions() {
     if (!visEl) observeCaptions();
     d3.select(captionsButtonEl).attr("data-ptm", "true");
 
-    d3.select(captionsButtonEl.parentNode).attr(
-      "title",
-      "Pass The Mic is enabled. Toggle caption visibility in the options."
-    );
+    // const parent =
+    // parent.attr(
+    //   "title",
+    //   "Pass The Mic is enabled. Toggle caption visibility in the options."
+    // );
+
+    d3.select(captionsButtonEl.parentNode)
+      .on("mouseenter", showTip)
+      .on("mouseleave", hideTip);
   } else {
     // if we were previously running it AND captions are visible, hide them
     if (visEl && display !== "none") {
@@ -487,9 +511,17 @@ function updateOptions() {
       d3.select(".ptm-vis").remove();
     }
     d3.select(captionsButtonEl).attr("data-ptm", null);
-    d3.select(captionsButtonEl.parentNode).attr("title", null);
+    d3.select(captionsButtonEl.parentNode)
+      .on("mouseenter", null)
+      .on("mouseleave", null);
+    hideTip();
     // TODO disconnect observer
   }
+
+  d3.selectAll(".ptm-popup .btn-enable").classed(
+    "active",
+    opts.enable === "true"
+  );
 
   // captions
   d3.select(captionsContainerEl).style(
@@ -502,6 +534,7 @@ function updateOptions() {
 
   // threshold
   thresholdPercent = +opts.threshold / 100 + 1;
+  d3.select(".ptm-popup .label--threshold span").text(`${opts.threshold}%`);
   updateThreshold();
 }
 
@@ -535,11 +568,15 @@ function resetSpeakers() {
 function shareResults() {
   const data = prepareData(true);
 
+  const max = d3.max(data, (d) => d.percent);
+  const equity = Math.round((1 / numSpeakers) * 100);
+
   const share = d3
     .select("body")
     .append("div")
     .attr("class", "ptm-share")
     .on("click", () => share.remove());
+
   share.append("h3").text("Share of Talking Time");
 
   share
@@ -549,7 +586,15 @@ function shareResults() {
     .on("click", () => share.remove());
 
   if (data.length) {
-    const ul = share.append("ul");
+    const chart = share.append("div").attr("class", "chart");
+
+    const equal = chart
+      .append("div")
+      .attr("class", "equity")
+      .style("left", `${equity}%`);
+    equal.append("p").text(`Equity: ${equity}%`);
+
+    const ul = chart.append("ul");
     const li = ul.selectAll("li").data(data).join("li");
 
     li.append("img").attr("src", (d) => d.img);
@@ -565,7 +610,7 @@ function shareResults() {
     graph
       .append("span")
       .attr("class", "bar")
-      .style("width", (d) => d3.format(".1%")(d.percent));
+      .style("width", (d) => d3.format(".1%")(d.percent / max));
   } else {
     share.append("p").attr("class", "no-data").text("No data to share");
   }
@@ -584,7 +629,7 @@ function createPopup() {
 
   const btnSettings = buttons
     .append("button")
-    .attr("class", "btn-settings")
+    .attr("class", "btn-settings active")
     .attr("aria-label", "Pass The Mic settings")
     .on("click", toggleSettings);
 
@@ -596,7 +641,7 @@ function createPopup() {
 
   const btnReset = buttons
     .append("button")
-    .attr("class", "btn-reset")
+    .attr("class", "btn-reset btn-enable  active")
     .attr("aria-label", "reset Pass The Mic speakers")
     .on("click", resetSpeakers);
 
@@ -606,13 +651,13 @@ function createPopup() {
 
   const btnShare = buttons
     .append("button")
-    .attr("class", "btn-share")
+    .attr("class", "btn-share btn-enable  active")
     .attr("aria-label", "share Pass The Mic results")
     .on("click", shareResults);
 
   btnShare.append("span").attr("class", "icon text-outline").html(shareSvg);
 
-  btnShare.append("span").attr("class", "label text-outline").text("share");
+  btnShare.append("span").attr("class", "label text-outline").text("results");
 
   const settings = popup.append("div").attr("class", "settings").html(`
 		<section id="intro">
@@ -635,8 +680,8 @@ function createPopup() {
 					<label for="jargon">Show jargon</label>
 				</div>
 				<div>
-					<label for="threshold">Highlight threshold:</label>
-					<p>The percent over an equal speaking share to trigger highlight</p>
+					<label class="label--threshold" for="threshold">Highlight threshold: <span>50%</span></label>
+					<p>0% = 1x, 100% = 2x equal share</p>
 					<input type="range" id="threshold" value="50">
 				</div>
 
