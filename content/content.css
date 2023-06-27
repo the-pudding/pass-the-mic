@@ -56,7 +56,7 @@
 	font-size: 16px !important;
 	font-weight: 800;
 	margin: 4px 0;
-	line-height: 1.4;
+	line-height: 1.25;
 }
 
 .ptm-vis .speaker .percent {
@@ -310,9 +310,17 @@ button[data-ptm="true"] {
 .ptm-share .equity {
 	position: absolute;
 	top: 0;
+	left: 58px;
 	height: 100%;
-	width: 1px;
+	width: calc(100% - 58px);
+}
+
+.ptm-share .equity .line {
 	border-left: 1px dashed rgba(0,0,0,0.5);
+	width: 1px;
+	height: 100%;
+	position: absolute;
+	top: 0;
 }
 
 .ptm-share .equity p {
@@ -343,6 +351,10 @@ button[data-ptm="true"] {
 	padding: 0;
 	margin-bottom: 4px;
 	font-size: 14px !important;
+}
+
+.ptm-share li .info span {
+	--color-text-outline: var(--ptm-primary);
 }
 
 .ptm-share li .right {

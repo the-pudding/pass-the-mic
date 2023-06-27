@@ -271,9 +271,12 @@ function renderVis() {
 
     const label = speaker.append("p").attr("class", "label text-outline");
 
-    label.append("span").attr("class", "name").text(displayName);
+    label.append("span").attr("class", "name text-outline").text(displayName);
 
-    const percent = label.append("span").attr("class", "percent").text("0%");
+    const percent = label
+      .append("span")
+      .attr("class", "percent text-outline")
+      .text("0%");
     percent.text(displayPercent);
 
     speaker.on("click", toggleIgnore);
@@ -297,11 +300,7 @@ function renderVis() {
 
   const joinedOthers = joined.filter((d) => d.key === "Others");
 
-  if (joinedOthers.size()) {
-    const member = joinedOthers.select(".members").html(memberHtml);
-
-    member.select(".percent").text(displayPercent);
-  }
+  if (joinedOthers.size()) joinedOthers.select(".members").html(memberHtml);
 }
 
 function renderJargon(id, index, terms) {
@@ -569,7 +568,7 @@ function shareResults() {
   const data = prepareData(true);
 
   const max = d3.max(data, (d) => d.percent);
-  const equity = Math.round((1 / numSpeakers) * 100);
+  const equity = 1 / numSpeakers;
 
   const share = d3
     .select("body")
@@ -588,11 +587,14 @@ function shareResults() {
   if (data.length) {
     const chart = share.append("div").attr("class", "chart");
 
-    const equal = chart
+    const equal = chart.append("div").attr("class", "equity");
+
+    const line = equal
       .append("div")
-      .attr("class", "equity")
-      .style("left", `${equity}%`);
-    equal.append("p").text(`Equity: ${equity}%`);
+      .attr("class", "line")
+      .style("left", d3.format(".0%")(equity / max));
+
+    line.append("p").text(`Equity: ${d3.format(".0%")(equity)}`);
 
     const ul = chart.append("ul");
     const li = ul.selectAll("li").data(data).join("li");
@@ -602,8 +604,11 @@ function shareResults() {
     const right = li.append("div").attr("class", "right");
 
     const info = right.append("p").attr("class", "info");
-    info.append("span").attr("class", "name").text(displayName);
-    info.append("span").attr("class", "percent").text(displayPercent);
+    info.append("span").attr("class", "name text-outline").text(displayName);
+    info
+      .append("span")
+      .attr("class", "percent text-outline")
+      .text(displayPercent);
 
     const graph = right.append("div").attr("class", "graph");
 
