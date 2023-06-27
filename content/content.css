@@ -165,11 +165,18 @@
 	margin: 4px 0;
 }
 
-.ptm-popup fieldset div p {
+.ptm-popup fieldset div p.description {
+	font-size: 12px !important;
 	margin: 4px 0;
+	line-height: 1;
+}
+
+.ptm-popup fieldset div p.details {
+	margin: 0;
 	display: flex;
 	justify-content: space-between;
 	font-size: 12px !important;
+	line-height: 1;
 }
 
 .ptm-popup fieldset .flex {

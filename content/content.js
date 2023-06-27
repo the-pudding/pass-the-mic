@@ -212,9 +212,9 @@ function prepareData(raw) {
 
 function updateThreshold() {
   threshold = (1 / numSpeakers) * thresholdPercent;
-  d3.select(".ptm-popup .label--threshold span").text(
-    d3.format(".0%")(threshold)
-  );
+  // d3.select(".ptm-popup .label--threshold span").text(
+  //   d3.format(".0%")(threshold)
+  // );
 }
 
 function updateNumSpeakers() {
@@ -691,10 +691,10 @@ function createPopup() {
 					<label for="jargon">Show jargon</label>
 				</div>
 				<div>
-					<label class="label--threshold" for="threshold">Highlight threshold: <span>50%</span></label>
-					<p><em>Dynamic based on the number of people</em></p>
+					<label class="label--threshold" for="threshold">Alert threshold</label>
+					<p class="description"><em>Proportionate to the number of people</em></p>
 					<input type="range" id="threshold" value="50" min="0" max="100">
-					<p><span>exact</span><span>very padded</span></p>
+					<p class="details"><span>exact split</span><span>extra padding</span></p>
 				</div>
 
 			</fieldset>
