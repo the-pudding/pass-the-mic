@@ -657,16 +657,6 @@ function createPopup() {
     .attr("class", "label text-outline")
     .text("settings");
 
-  const btnReset = buttons
-    .append("button")
-    .attr("class", "btn-reset btn-enable  active")
-    .attr("aria-label", "reset Pass The Mic")
-    .on("click", resetSpeakers);
-
-  btnReset.append("span").attr("class", "icon text-outline").html(refreshSvg);
-
-  btnReset.append("span").attr("class", "label text-outline").text("reset");
-
   const btnShare = buttons
     .append("button")
     .attr("class", "btn-share btn-enable  active")
@@ -676,6 +666,16 @@ function createPopup() {
   btnShare.append("span").attr("class", "icon text-outline").html(shareSvg);
 
   btnShare.append("span").attr("class", "label text-outline").text("results");
+
+  const btnReset = buttons
+    .append("button")
+    .attr("class", "btn-reset btn-enable  active")
+    .attr("aria-label", "reset Pass The Mic")
+    .on("click", resetSpeakers);
+
+  btnReset.append("span").attr("class", "icon text-outline").html(refreshSvg);
+
+  btnReset.append("span").attr("class", "label text-outline").text("reset");
 
   const settings = popup.append("div").attr("class", "settings").html(`
 		<section id="intro">
