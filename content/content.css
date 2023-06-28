@@ -29,6 +29,9 @@
 	color: var(--color);
 	padding: 0 4px;
 	transition: all 0.5s ease-in-out;
+}
+
+.ptm-vis .speaker.others { 
 	cursor: pointer;
 }
 
@@ -98,10 +101,16 @@
 	font-weight: 800;
 	line-height: 1;
 	margin: 4px 0;
+	display: flex;
+	justify-content: space-between;
 }
 
 .ptm-vis .speaker .members li span  {
 	font-weight: 500;
+}
+
+.ptm-vis .speaker .members li span.name  {
+	margin-right: 8px;
 }
 
 .text-outline  {
@@ -188,7 +197,11 @@
 }
 
 .ptm-popup h3 {
-	margin-top: 0;
+	margin: 0;
+}
+
+.ptm-popup section {
+	margin-bottom: 8px;
 }
 
 .ptm-popup h4 {
@@ -279,6 +292,10 @@ button[data-ptm="true"] {
 .ptm-popup .buttons button svg {
 	width: 20px;
 	height: 20px;
+}
+
+.ptm-popup li {
+	margin-bottom: 4px;
 }
 
 .ptm-jargon {

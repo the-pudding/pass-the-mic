@@ -1,6 +1,6 @@
 const VIS_PADDING = 16;
 const MIN_WIDTH = 160;
-const MIN_CHAR_COUNT = 10;
+const MIN_CHAR_COUNT = 20;
 const MIN_SPEAKERS = 2;
 const jargonTerms = [
   "action plan",
@@ -257,7 +257,7 @@ function memberHtml(d) {
       (m) =>
         `<li class="member text-outline">
 			<span class="name">${displayName(m)}</span>
-			<span class="percent">${displayPercent(m)}</span>
+			<span class="percent2">${displayPercent(m)}</span>
 		</li>`
     )
     .join("");
@@ -308,6 +308,7 @@ function renderVis() {
       if (d.key === "Others") return false;
       return d.percent >= threshold;
     })
+    .classed("others", (d) => d.key === "Others")
     .style("width", (d) => d3.format(".1%")(d.percent));
 
   joined.select(".percent").text(displayPercent);
@@ -709,10 +710,10 @@ function createPopup() {
 
 		<section id="outro">
 			<ul>
-				<li>Bugs or feature requests: <a href="https://github.com/the-pudding/pass-the-mic/issues" target="_blank" rel="noreferrer">Github</a> or <a href="mailto:russell@pudding.cool">email</a></li>
-				<li>Credits: <a href="https://pudding.cool/author/russell-samora" target="_blank" rel="noreferrer">Russell Samora</a> for <a href="https://pudding.cool" target="_blank" rel="noreferrer">The
+				<li>Bugs/feature requests: <a href="https://github.com/the-pudding/pass-the-mic/issues" target="_blank" rel="noreferrer">Github</a> or <a href="mailto:russell@pudding.cool">email</a></li>
+				<li>By <a href="https://pudding.cool/author/russell-samora" target="_blank" rel="noreferrer">Russell Samora</a> for <a href="https://pudding.cool" target="_blank" rel="noreferrer">The
 					Pudding</a></li>
-				<li><a href="https://github.com/the-pudding/pass-the-mic/#readme" target="_blank" rel="noreferrer">Repository and methods</a></li>
+				<li><a href="https://github.com/the-pudding/pass-the-mic/#readme" target="_blank" rel="noreferrer">Code repo and methods</a></li>
 			</ul>
 		</section>
 	`);

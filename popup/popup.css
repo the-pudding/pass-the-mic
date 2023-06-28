@@ -2,9 +2,13 @@ body {
 	width: 280px;
 }
 
-.ptm-popup ul {
+ul {
 	margin: 0;
 	margin-bottom: 16px;
 	padding: 0;
 	padding-left: 16px;
+}
+
+li {
+	margin-bottom: 4px;
 }
