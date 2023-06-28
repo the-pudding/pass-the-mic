@@ -20,6 +20,10 @@
 	border-radius: 6px;
 }
 
+.ptm-vis:empty {
+	display: none;
+}
+
 .ptm-vis .speaker {
 	--color: #ccc;
 	color: var(--color);

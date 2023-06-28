@@ -1,6 +1,7 @@
-const primary = "#FF77AA";
-const visPadding = 16;
-const minWidth = 160;
+const VIS_PADDING = 16;
+const MIN_WIDTH = 160;
+const MIN_CHAR_COUNT = 10;
+const MIN_SPEAKERS = 2;
 const jargonTerms = [
   "action plan",
   "actionable",
@@ -123,9 +124,9 @@ let nameYou = "You";
 let captionsButtonEl;
 let captionsContainerEl;
 let showJargon;
-let threshold = 0;
 let thresholdPercent = 1;
-let numSpeakers = 1;
+// let threshold = 0;
+// let numSpeakers = 1;
 
 function setStorage(key, value) {
   window.localStorage.setItem(`${base}-${key}`, value);
@@ -166,9 +167,10 @@ function prepareData(raw) {
     all.push({ key, name, img, charCount });
   }
 
-  const filtered = all.filter((d) => d.charCount > 0);
+  const filtered = all.filter((d) => d.charCount > MIN_CHAR_COUNT);
 
   const total = d3.sum(filtered.map((d) => d.charCount));
+
   const percents = filtered.map((d) => ({
     ...d,
     percent: d.charCount / total,
@@ -177,12 +179,16 @@ function prepareData(raw) {
   // sort by count
   percents.sort((a, b) => b.percent - a.percent);
 
-  if (raw) return percents;
+  const numSpeakers = percents.length;
+
+  if (percents.length < MIN_SPEAKERS) return { data: [], numSpeakers: 0 };
+
+  if (raw) return { data: percents, numSpeakers };
 
   // TODO min width
   const w =
     document.querySelector(".ptm-vis").getBoundingClientRect().width -
-    visPadding;
+    VIS_PADDING;
 
   const withWidth = percents.map((d) => ({
     ...d,
@@ -191,7 +197,7 @@ function prepareData(raw) {
 
   const withGroup = withWidth.map((d, i) => ({
     ...d,
-    group: d.width > minWidth ? i : -1,
+    group: d.width > MIN_WIDTH ? i : -1,
   }));
 
   const clean = d3
@@ -207,34 +213,31 @@ function prepareData(raw) {
       return members[0];
     });
 
-  return clean;
+  return { data: clean, numSpeakers };
 }
 
-function updateThreshold() {
-  threshold = (1 / numSpeakers) * thresholdPercent;
-  // d3.select(".ptm-popup .label--threshold span").text(
-  //   d3.format(".0%")(threshold)
-  // );
+function getThreshold(numSpeakers) {
+  return (1 / numSpeakers) * thresholdPercent;
 }
 
-function updateNumSpeakers() {
-  const total = document.querySelectorAll("[data-self-name]").length;
-  const ignoreCount = d3.selectAll(".speaker.ignore").size();
-  numSpeakers = total - ignoreCount;
-  updateThreshold();
-}
+// function updateNumSpeakers() {
+//   const total = document.querySelectorAll("[data-self-name]").length;
+//   const ignoreCount = d3.selectAll(".speaker.ignore").size();
+//   numSpeakers = total - ignoreCount;
+//   getThreshold();
+// }
 
-function toggleIgnore() {
-  const value = d3.select(this).classed("ignore");
-  d3.select(this).classed("ignore", !value);
-  updateNumSpeakers();
-}
+// function toggleIgnore() {
+//   const value = d3.select(this).classed("ignore");
+//   d3.select(this).classed("ignore", !value);
+//   updateNumSpeakers();
+// }
 
-function highlight(d) {
-  if (d3.select(this).classed("ignore")) return false;
-  if (d.key === "Others") return false;
-  return d.percent >= threshold;
-}
+// function highlight(d) {
+//   if (d3.select(this).classed("ignore")) return false;
+//   if (d.key === "Others") return false;
+//   return d.percent >= threshold;
+// }
 
 function showMembers() {
   const d = d3.select(this).datum();
@@ -261,14 +264,15 @@ function memberHtml(d) {
 }
 
 function renderVis() {
-  const data = prepareData();
+  const { data, numSpeakers } = prepareData();
+  const threshold = getThreshold(numSpeakers);
 
   const speakerEnter = (enter) => {
     const speaker = enter.append("div");
 
     speaker
       .attr("class", "speaker")
-      .attr("aria-role", "button")
+      // .attr("aria-role", "button")
       .on("mouseenter", showMembers)
       .on("mouseleave", hideMembers);
 
@@ -286,7 +290,7 @@ function renderVis() {
       .text("0%");
     percent.text(displayPercent);
 
-    speaker.on("click", toggleIgnore);
+    // speaker.on("click", toggleIgnore);
 
     speaker.append("ul").attr("class", "members");
 
@@ -300,7 +304,10 @@ function renderVis() {
     .join(speakerEnter);
 
   joined
-    .classed("highlight", highlight)
+    .classed("highlight", (d) => {
+      if (d.key === "Others") return false;
+      return d.percent >= threshold;
+    })
     .style("width", (d) => d3.format(".1%")(d.percent));
 
   joined.select(".percent").text(displayPercent);
@@ -448,7 +455,7 @@ function observeSpeaker(el) {
 }
 
 function handlePersonChange(mutationsList) {
-  updateNumSpeakers();
+  // updateNumSpeakers();
 
   for (let mutation of mutationsList) {
     if (mutation.addedNodes.length) {
@@ -540,7 +547,7 @@ function updateOptions() {
 
   // threshold
   thresholdPercent = +opts.threshold / 100 + 1;
-  updateThreshold();
+  // getThreshold();
 }
 
 function observeCaptions() {
@@ -571,7 +578,7 @@ function resetSpeakers() {
 }
 
 function shareResults() {
-  const data = prepareData(true);
+  const { data, numSpeakers } = prepareData(true);
 
   const max = d3.max(data, (d) => d.percent);
   const equity = 1 / numSpeakers;
@@ -600,7 +607,7 @@ function shareResults() {
       .attr("class", "line")
       .style("left", d3.format(".0%")(equity / max));
 
-    line.append("p").text(`Equity: ${d3.format(".0%")(equity)}`);
+    line.append("p").text(`Equal share: ${d3.format(".0%")(equity)}`);
 
     const ul = chart.append("ul");
     const li = ul.selectAll("li").data(data).join("li");
@@ -653,7 +660,7 @@ function createPopup() {
   const btnReset = buttons
     .append("button")
     .attr("class", "btn-reset btn-enable  active")
-    .attr("aria-label", "reset Pass The Mic speakers")
+    .attr("aria-label", "reset Pass The Mic")
     .on("click", resetSpeakers);
 
   btnReset.append("span").attr("class", "icon text-outline").html(refreshSvg);
@@ -698,11 +705,6 @@ function createPopup() {
 				</div>
 
 			</fieldset>
-		</section>
-
-		<section id="howto">
-			<h4><strong>Tips</strong></h4>
-			<p>Click a person to remove them from the speaker count.</p>
 		</section>
 
 		<section id="outro">
