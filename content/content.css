@@ -135,6 +135,7 @@
 	left: 16px;
 	z-index: 999999;
 	font-family: var(--ptm-font);
+	pointer-events: none;
 }
 
 .ptm-popup .settings {
@@ -152,6 +153,7 @@
 
 .ptm-popup .settings.active {
 	display: block;
+	pointer-events: auto;
 }
 
 .ptm-popup input {
@@ -235,6 +237,7 @@ button[data-ptm="true"] {
 	align-items: center;
 	width: 72px;
 	justify-content: center;
+	pointer-events: auto;
 }
 
 .ptm-popup .buttons button {
