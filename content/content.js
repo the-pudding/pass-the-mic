@@ -417,9 +417,9 @@ function handleSpeakerUpdate(id, mutationsList) {
 }
 
 function observeSpeaker(el) {
-  const imgNode = el.childNodes[0];
-  const nameNode = el.childNodes[1];
-  const speechNode = el.childNodes[2].childNodes[0];
+  const imgNode = el.childNodes[0].childNodes[0];
+  const nameNode = el.childNodes[0].childNodes[1];
+  const speechNode = el.childNodes[1].childNodes[0];
   const name = nameNode.textContent;
 
   const img = imgNode.src;
