@@ -3,6 +3,7 @@ const MIN_WIDTH = 160;
 const MIN_CHAR_COUNT = 20;
 const MIN_SPEAKERS = 2;
 const jargonTerms = [
+  "anxious",
   "action plan",
   "actionable",
   "agile",
