@@ -766,4 +766,4 @@ async function init(btn) {
   updateOptions();
 }
 
-waitForElement("[aria-label='Turn on captions (c)']", init);
+waitForElement("[aria-label='Turn on captions']", init);
